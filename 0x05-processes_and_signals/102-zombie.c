@@ -3,30 +3,40 @@
 #include <unistd.h>
 #include <sys/types.h>
 
-/**
- * main - create 5 zombie processes
- *
- * Return: void
- */
+int infinite_while(void);
 
+/**
+ * main - entry point, creates zombie processes
+ *
+ * Return: 0
+ */
 int main(void)
 {
-    pid_t childpid;
-    int i;
+	int i;
+	pid_t child_id;
 
-    for (i = 0; i < 5; i++)
-    {
-        childpid = fork();
-        if (childpid == 0)
-        {
-            printf("Zombie process created, PID: %i\n", getpid());
-            exit(0);
-        }
-    }
+	for (i = 0; i < 5; i++)
+	{
+		child_id = fork();
+		if (child_id > 0)
+			printf("Zombie process created, PID: %ld\n", (long int) child_id);
+		else
+			exit(0);
+	}
+	infinite_while();
+	return (0);
+}
 
-    while (0)
-    {
-        sleep(1);
-    }
-    return (0);
+/**
+ * infinite_while - stalls program
+ *
+ * Return: 0
+ */
+int infinite_while(void)
+{
+	while (1)
+	{
+		sleep(1);
+	}
+	return (0);
 }

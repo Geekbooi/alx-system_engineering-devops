@@ -1,25 +1,42 @@
-#!/usr/bin/env bash
-# script that manages the manage_my_process script
+#include <stdio.h>
+#include <stdlib.h>
+#include <unistd.h>
+#include <sys/types.h>
 
-case "$1" in
-start)
-	./manage_my_process &
-	echo "$!" >/var/run/my_process.pid
-	echo "manage_my_process started"
-	;;
-stop)
-	kill "$(cat /var/run/my_process.pid)"
-	rm /var/run/my_process.pid
-	echo "manage_my_process stopped"
-	;;
-restart)
-	kill "$(cat /var/run/my_process.pid)"
-	rm /var/run/my_process.pid
-	./manage_my_process &
-	echo "$!" >/var/run/my_process.pid
-	echo "manage_my_process restarted"
-	;;
-*)
-	echo "Usage: manage_my_process {start|stop|restart}"
-	;;
-esac
+int infinite_while(void);
+
+/**
+ * main - entry point, creates zombie processes
+ *
+ * Return: 0
+ */
+int main(void)
+{
+	int i;
+	pid_t child_id;
+
+	for (i = 0; i < 5; i++)
+	{
+		child_id = fork();
+		if (child_id > 0)
+			printf("Zombie process created, PID: %ld\n", (long int) child_id);
+		else
+			exit(0);
+	}
+	infinite_while();
+	return (0);
+}
+
+/**
+ * infinite_while - stalls program
+ *
+ * Return: 0
+ */
+int infinite_while(void)
+{
+	while (1)
+	{
+		sleep(1);
+	}
+	return (0);
+	}
