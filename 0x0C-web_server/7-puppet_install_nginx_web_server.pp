@@ -1,35 +1,43 @@
-#Manifest that configures NGINX
-exec { 'exec_0':
-  command => 'sudo sudo apt-get update -y',
-  path    => ['/usr/bin', '/bin'],
-  returns => [0,1]
-  }
+# configure nginx server to listen to port 80
+# with permanent redirect for /redirect_me and handle
+# custom error 404 page
 
-exec { 'exec_1':
-  require => Exec['exec_0'],
-  command => 'sudo apt-get install nginx -y',
-  path    => ['/usr/bin', '/bin'],
-  returns => [0,1]
-  }
+exec {'apt-get-update':
+  command => '/usr/bin/apt-get update'
+}
 
-exec { 'exec_2':
-  require => Exec['exec_1'],
-  command => 'echo "Holberton School" | sudo tee /var/www/html/index.nginx-debian.html',
-  path    => ['/usr/bin', '/bin'],
-  returns => [0,1]
-  }
+package {'nginx':
+  ensure  => 'installed',
+  require => Exec['apt-get-update'],
+}
 
-exec { 'exec_3':
-  require     => Exec['exec_2'],
-  environment => ['GG=google.com permanent'],
-  command     => 'sudo sed -i "s/server_name _;/server_name _;\n\trewrite ^\/redirect_me $GG;/" /etc/nginx/sites-enabled/default',
-  path        => ['/usr/bin', '/bin'],
-  returns     => [0,1]
-  }
+file {'/var/www/html/index.html':
+  ensure  => 'present',
+  content => 'Holberton School',
+  require => Package['nginx']
+}
 
-exec { 'exec_4':
-  require => Exec['exec_3'],
-  command => 'sudo service nginx start',
-  path    => ['/usr/bin', '/bin', '/usr/sbin'],
-  returns => [0,1]
-  }
+file_line {'server_name _;':
+  path    => '/etc/nginx/sites-available/default',
+  line    => "\n\tlocation /redirect_me {\n\t\trewrite ^/redirect_me(.*)$ https://www.youtube.com/watch?v=QH2-TGUlwu4 permanent;\n\t}",
+  after   => 'server_name _;',
+  require => Package['nginx']
+}
+
+file {'/var/www/html/404.html':
+  ensure  => 'present',
+  content => "Ceci n'est pas une page",
+  require => Package['nginx']
+}
+
+file_line {'server_name _; ':
+  path    => '/etc/nginx/sites-enabled/default',
+  line    => "\n\terror_page 404 /404.html;\n\tlocation = /404.html {\n\t\troot /var/www/html;\n\t\tinternal;\n\t}",
+  after   => 'server_name _;',
+  require => Package['nginx']
+}
+
+service {'nginx':
+  ensure  => 'running',
+  require => Package['nginx']
+}
