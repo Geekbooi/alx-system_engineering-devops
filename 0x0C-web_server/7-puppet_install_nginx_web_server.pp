@@ -1,4 +1,4 @@
-# Manifest that configures NGINX
+#Manifest that configures NGINX
 exec { 'exec_0':
   command => 'sudo sudo apt-get update -y',
   path    => ['/usr/bin', '/bin'],
